@@ -17,6 +17,9 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text';
 
+import { useRef } from 'react';
+import { useCloseOnOutsideClickOrEsc } from 'src/hooks/useCloseOnOutsideClickOrEsc';
+
 type ArticleParamsFormProps = {
 	isOpen: boolean;
 	onToggle: () => void;
@@ -34,12 +37,26 @@ export const ArticleParamsForm = ({
 	onApply,
 	onReset,
 }: ArticleParamsFormProps) => {
+	const asideRef = useRef<HTMLDivElement | null>(null);
+
+	useCloseOnOutsideClickOrEsc({
+		isOpenElement: isOpen,
+		onClose: onToggle,
+		elementRef: asideRef,
+	});
+
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		onApply();
+	};
+
 	return (
 		<>
 			<ArrowButton isOpen={isOpen} onClick={onToggle} />
 			<aside
+				ref={asideRef}
 				className={clsx(styles.container, { [styles.container_open]: isOpen })}>
-				<form className={styles.form}>
+				<form className={styles.form} onSubmit={handleSubmit}>
 					<Text as='h2' size={31} weight={800} uppercase align='left'>
 						Задайте параметры
 					</Text>
@@ -110,15 +127,10 @@ export const ArticleParamsForm = ({
 						<Button
 							title='Сбросить'
 							type='clear'
-							htmlType='button'
+							htmlType='reset'
 							onClick={onReset}
 						/>
-						<Button
-							title='Применить'
-							type='apply'
-							htmlType='button'
-							onClick={onApply}
-						/>
+						<Button title='Применить' type='apply' htmlType='submit' />
 					</div>
 				</form>
 			</aside>
